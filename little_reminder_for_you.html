@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>A Little Reminder for You 💗</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(135deg,#ffe8f1,#eee4ff,#e2f6ff);color:#55384b;overflow:hidden}
+#game{height:100vh;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:22px;text-align:center}
+.screen.active{display:flex}
+.card{width:min(620px,94vw);background:#ffffffd9;backdrop-filter:blur(12px);border:1px solid #fff;border-radius:30px;padding:30px;box-shadow:0 18px 60px #7e547a25}
+h1{font-size:clamp(30px,7vw,54px);margin:8px 0 12px}
+h2{font-size:32px;margin:8px 0}
+p{font-size:18px;line-height:1.6;margin:12px auto;max-width:500px}
+button{border:0;border-radius:999px;padding:13px 22px;font-size:16px;font-weight:700;background:#ff82ad;color:white;cursor:pointer;box-shadow:0 8px 20px #ff82ad45;margin:7px}
+button:hover{transform:translateY(-2px)}
+.character{font-size:78px;animation:float 2.4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-9px)}}
+#play{background:linear-gradient(#bfe8ff,#eaf8ff 58%,#d9f1d0)}
+#sky{position:absolute;inset:0;pointer-events:none}
+.cloud{position:absolute;font-size:55px;opacity:.55}
+#girl{position:absolute;left:50%;bottom:55px;transform:translateX(-50%);font-size:72px;z-index:3;transition:.25s}
+#ground{position:absolute;bottom:0;width:100%;height:90px;background:#a9d98c;border-radius:50% 50% 0 0/30% 30% 0 0}
+.heart{position:absolute;font-size:35px;cursor:pointer;z-index:4;animation:pulse 1s infinite alternate}
+@keyframes pulse{to{transform:scale(1.12)}}
+#hud{position:absolute;top:18px;left:18px;right:18px;display:flex;justify-content:space-between;font-weight:800;font-size:17px;z-index:5}
+#message{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(470px,86vw);background:#fffffff0;padding:24px;border-radius:25px;box-shadow:0 15px 50px #59405a35;display:none;z-index:10}
+#message.show{display:block}
+.small{font-size:14px;opacity:.7}
+#finalText{font-size:20px;font-weight:650}
+</style>
+</head>
+<body>
+<div id="game">
+
+<section id="home" class="screen active">
+  <div class="card">
+    <div class="character">🌷</div>
+    <h1>A Little Reminder For You 💗</h1>
+    <p>I made you a tiny place where you can forget the things that make you doubt yourself for a minute.</p>
+    <p>Collect the little hearts. Each one has something I want you to remember.</p>
+    <button onclick="startGame()">Come with me 🌸</button>
+  </div>
+</section>
+
+<section id="play" class="screen">
+  <div id="sky">
+    <div class="cloud" style="left:8%;top:13%">☁️</div>
+    <div class="cloud" style="right:10%;top:22%">☁️</div>
+  </div>
+  <div id="hud"><span>💗 Hearts: <b id="score">0</b>/7</span><span>Move: ← →</span></div>
+  <div id="ground"></div>
+  <div id="girl">🌸</div>
+  <div id="message"><h2 id="msgTitle">💗</h2><p id="msgBody"></p><button onclick="closeMessage()">Keep going 🌷</button></div>
+</section>
+
+<section id="end" class="screen">
+  <div class="card">
+    <div class="character">🫂</div>
+    <h2>You made it. 💗</h2>
+    <p id="finalText">And now, one last reminder...</p>
+    <p><b>You don't have to be perfect to be beautiful, lovable, or worthy.</b></p>
+    <p>You are allowed to have insecure days. They don't change your worth.</p>
+    <p>And I hope one day you can see yourself through the eyes of someone who genuinely cares about you. 🌷</p>
+    <button onclick="location.reload()">Play again 🌸</button>
+  </div>
+</section>
+
+</div>
+<script>
+const messages=[
+ ["You are enough. 💗","You don't have to become someone else to deserve love."],
+ ["No comparing. 🌷","Someone else's beauty doesn't take anything away from yours."],
+ ["Be gentle with yourself. 🫂","You would comfort a friend who felt insecure. You deserve that same kindness."],
+ ["Your little flaws aren't flaws to everyone. ✨","Sometimes the things you overthink are the exact things someone finds adorable."],
+ ["You are more than a mirror. 🌸","Your laugh, your kindness, your presence and the way you make people feel matter too."],
+ ["You don't need to earn reassurance. 💕","It's okay to need a little comfort sometimes."],
+ ["One last heart. 💌","Please don't let one bad thought convince you that you aren't worth loving."]
+];
+
+let score=0, girlX=50, hearts=[], paused=false;
+
+function show(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+function startGame(){
+ show('play'); score=0; document.getElementById('score').textContent=0;
+ spawnHearts();
+}
+function spawnHearts(){
+ hearts=[];
+ for(let i=0;i<7;i++){
+   const h=document.createElement('div');
+   h.className='heart'; h.textContent='💗';
+   h.style.left=(10+Math.random()*80)+'%';
+   h.style.top=(18+Math.random()*58)+'%';
+   h.dataset.i=i;
+   h.onclick=()=>collect(h,i);
+   document.getElementById('play').appendChild(h);
+   hearts.push(h);
+ }
+}
+function collect(h,i){
+ if(paused||h.style.visibility==='hidden')return;
+ h.style.visibility='hidden'; score++; document.getElementById('score').textContent=score;
+ paused=true;
+ document.getElementById('msgTitle').textContent=messages[i][0];
+ document.getElementById('msgBody').textContent=messages[i][1];
+ document.getElementById('message').classList.add('show');
+ if(score===7) setTimeout(()=>{},100);
+}
+function closeMessage(){
+ document.getElementById('message').classList.remove('show');
+ paused=false;
+ if(score===7){
+   setTimeout(()=>{hearts.forEach(h=>h.remove());show('end')},250);
+ }
+}
+document.addEventListener('keydown',e=>{
+ if(!document.getElementById('play').classList.contains('active')||paused)return;
+ if(e.key==='ArrowLeft')girlX=Math.max(8,girlX-3);
+ if(e.key==='ArrowRight')girlX=Math.min(92,girlX+3);
+ document.getElementById('girl').style.left=girlX+'%';
+});
+document.getElementById('play').addEventListener('touchstart',e=>{
+ const x=e.touches[0].clientX;
+ if(x<innerWidth/2)girlX=Math.max(8,girlX-5);else girlX=Math.min(92,girlX+5);
+ document.getElementById('girl').style.left=girlX+'%';
+});
+</script>
+</body>
+</html>
